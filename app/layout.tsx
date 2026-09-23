@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/themes/theme-provider";
 import { UserStoreProvider } from "@/components/providers/user-store-provider";
-import employeeData from "@/career_quest_dataset/employees.json";
-import { employeeDatasetSchema } from "@/lib/employees";
+import { loadStarterDataset } from "@/server/repositories/dataset";
 import "./globals.css";
 import { Alice, Cormorant_Garamond, IBM_Plex_Mono } from "next/font/google";
-
-const { employees } = employeeDatasetSchema.parse(employeeData);
 
 const alice = Alice({
   subsets: ['latin'],
@@ -32,11 +28,12 @@ export const metadata: Metadata = {
   description: "HACK ALEM AGENTIC AI Project.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { warnings: _warnings, ...dataset } = await loadStarterDataset();
   return (
     <html
       lang="en"
@@ -50,7 +47,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <UserStoreProvider employees={employees}>{children}</UserStoreProvider>
+          <UserStoreProvider dataset={dataset}>{children}</UserStoreProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -1,16 +1,19 @@
 "use client";
+import { selectProfile } from "@/stores/selectors";
 
 import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/components/providers/user-store-provider";
+import { isHrEmployee } from "@/lib/employees";
 
 export function HrRouteGuard({ children }: { children: ReactNode }) {
-  const accountType = useUserStore((state) => state.accountType);
+  const profile = useUserStore(selectProfile);
+  const isHr = isHrEmployee(profile);
   const router = useRouter();
 
   useEffect(() => {
-    if (accountType !== "hr") router.replace("/");
-  }, [accountType, router]);
+    if (!isHr) router.replace("/");
+  }, [isHr, router]);
 
-  return accountType === "hr" ? children : null;
+  return isHr ? children : null;
 }

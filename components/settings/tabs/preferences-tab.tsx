@@ -1,4 +1,5 @@
 "use client";
+import { selectProfile, selectPreferences } from "@/stores/selectors";
 
 import { useId } from "react";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,9 +27,13 @@ const TIME = [
 
 export function PreferencesTab() {
   const id = useId();
-  const profile = useUserStore((state) => state.profile);
-  const preferences = useUserStore((state) => state.preferences);
+  const profile = useUserStore(selectProfile);
+  const preferences = useUserStore(selectPreferences);
   const updatePreferences = useUserStore((state) => state.updatePreferences);
+  const roleProfiles = useUserStore((state) => state.dataset.role_profiles);
+  const targetOptions = roleProfiles.filter((item) => item.role !== profile.role).map((item) => ({
+    value: JSON.stringify([item.role, item.grade]), label: `${item.grade} · ${item.role}`,
+  }));
 
   return (
     <div className="space-y-6">
@@ -42,6 +47,18 @@ export function PreferencesTab() {
             <SelectContent>{GOALS.map((item) => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>)}</SelectContent>
           </Select>
         </div>
+        {preferences.careerGoal === "change_role" && <div className="space-y-2">
+          <label id={`${id}-target`} className="text-xs font-medium">Target role and grade</label>
+          <Select items={targetOptions} value={preferences.targetGoal ? JSON.stringify([preferences.targetGoal.target_role, preferences.targetGoal.target_grade]) : null}
+            onValueChange={(value) => {
+              const target = roleProfiles.find((item) => JSON.stringify([item.role, item.grade]) === value);
+              if (target) updatePreferences({ targetGoal: { target_role: target.role, target_grade: target.grade } });
+            }}>
+            <SelectTrigger aria-labelledby={`${id}-target`} className="w-full"><SelectValue placeholder="Choose a target" /></SelectTrigger>
+            <SelectContent>{targetOptions.map((item) => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>)}</SelectContent>
+          </Select>
+          {!preferences.targetGoal && <p className="text-xs text-muted-foreground">Until you choose a target, progress uses your current career path.</p>}
+        </div>}
         <div className="space-y-2">
           <label htmlFor={`${id}-interests`} className="text-xs font-medium">Skills and interests</label>
           <Textarea id={`${id}-interests`} placeholder="What would you like to explore or improve?" value={preferences.interests} onChange={(event) => updatePreferences({ interests: event.target.value })} className="min-h-20 resize-y" />

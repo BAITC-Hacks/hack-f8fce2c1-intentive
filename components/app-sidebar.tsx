@@ -1,4 +1,5 @@
 "use client";
+import { selectProfile } from "@/stores/selectors";
 
 import * as React from "react";
 import Link from "next/link";
@@ -43,6 +44,7 @@ import {
 import { SettingsDialog } from "@/components/settings";
 import { useColorTheme } from "@/components/themes/theme-provider";
 import { useUserStore } from "@/components/providers/user-store-provider";
+import { isHrEmployee } from "@/lib/employees";
 
 const EMPLOYEE_NAVIGATION = [
   { href: "/", label: "My development", icon: LayoutDashboard },
@@ -53,7 +55,8 @@ const EMPLOYEE_NAVIGATION = [
 export function AppSidebar() {
   const [settingsOpen, setSettingsOpen] = React.useState(false);
   const pathname = usePathname();
-  const accountType = useUserStore((state) => state.accountType);
+  const profile = useUserStore(selectProfile);
+  const isHr = isHrEmployee(profile);
   const { isMobile, setOpenMobile } = useSidebar();
   const { theme, setTheme } = useTheme();
   const { colorTheme, setColorTheme, colorThemes } = useColorTheme();
@@ -73,55 +76,64 @@ export function AppSidebar() {
   return (
     <>
       <Sidebar collapsible="icon" variant="inset">
-        <SidebarHeader className="border-b border-sidebar-border">
+        <SidebarHeader className="border-b border-sidebar-border/60 p-3">
           <div className="flex items-center justify-between gap-2 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-1">
             <SidebarMenu className="flex-1 group-data-[collapsible=icon]:hidden">
               <SidebarMenuItem>
                 <SidebarMenuButton size="lg" className="hover:bg-transparent cursor-default">
+                  {/* Здесь может размещаться логотип или название проекта */}
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
-            <SidebarTrigger className="shrink-0" />
+            <SidebarTrigger className="shrink-0 text-muted-foreground hover:text-foreground transition-colors" />
           </div>
         </SidebarHeader>
 
-        <SidebarContent>
-          {accountType === "employee" ? (
-            <SidebarGroup>
-              <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+        <SidebarContent className="px-2 py-3 space-y-4">
+          <SidebarGroup className="p-0">
+            <SidebarGroupLabel className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground/70 px-2 mb-1.5">
+              Workspace
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              {/* Added gap-1.5 between menu items */}
+              <SidebarMenu className="gap-1.5">
+                {EMPLOYEE_NAVIGATION.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname === item.href;
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        render={<Link href={item.href} onClick={() => isMobile && setOpenMobile(false)} />}
+                        isActive={isActive}
+                        tooltip={item.label}
+                        className="transition-all duration-150 rounded-md px-2.5 py-2"
+                      >
+                        <Icon className="size-4 shrink-0 transition-transform duration-150 group-hover/menu-button:scale-105" />
+                        <span className="font-medium text-sm">{item.label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          {isHr && (
+            <SidebarGroup className="p-0">
+              <SidebarGroupLabel className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground/70 px-2 mb-1.5">
+                HR workspace
+              </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu>
-                  {EMPLOYEE_NAVIGATION.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <SidebarMenuItem key={item.href}>
-                        <SidebarMenuButton
-                          render={<Link href={item.href} onClick={() => isMobile && setOpenMobile(false)} />}
-                          isActive={pathname === item.href}
-                          tooltip={item.label}
-                        >
-                          <Icon />
-                          <span>{item.label}</span>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          ) : (
-            <SidebarGroup>
-              <SidebarGroupLabel>HR workspace</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
+                <SidebarMenu className="gap-1.5">
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       render={<Link href="/hr" onClick={() => isMobile && setOpenMobile(false)} />}
                       isActive={pathname === "/hr"}
                       tooltip="HR overview"
+                      className="transition-all duration-150 rounded-md px-2.5 py-2"
                     >
-                      <UsersRound />
-                      <span>HR overview</span>
+                      <UsersRound className="size-4 shrink-0 transition-transform duration-150 group-hover/menu-button:scale-105" />
+                      <span className="font-medium text-sm">HR overview</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
@@ -130,33 +142,34 @@ export function AppSidebar() {
           )}
         </SidebarContent>
 
-        <SidebarSeparator />
+        <SidebarSeparator className="mx-2 opacity-50" />
 
-        <SidebarFooter className="p-2 gap-1">
-          <SidebarMenu>
+        <SidebarFooter className="p-2">
+          {/* Added gap-1.5 for control items in footer */}
+          <SidebarMenu className="gap-1.5">
             <SidebarMenuItem>
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
-                    <SidebarMenuButton tooltip="Toggle Theme">
+                    <SidebarMenuButton tooltip="Toggle Theme" className="transition-all duration-150 rounded-md px-2.5 py-2">
                       {getThemeIcon()}
-                      <span>Theme</span>
+                      <span className="font-medium text-sm">Theme</span>
                     </SidebarMenuButton>
                   }
                 />
-                <DropdownMenuContent side="right" align="end" className="w-48">
+                <DropdownMenuContent side="right" align="end" className="w-48 shadow-md">
                   <DropdownMenuGroup>
-                    <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
+                    <DropdownMenuLabel className="text-xs text-muted-foreground font-normal px-2 py-1.5">
                       Color Theme
                     </DropdownMenuLabel>
                     {colorThemes.map((item) => (
                       <DropdownMenuItem
                         key={item.id}
                         onClick={() => setColorTheme(item.id)}
-                        className="flex items-center justify-between"
+                        className="flex items-center justify-between cursor-pointer py-1.5"
                       >
                         <span>{item.name}</span>
-                        {colorTheme === item.id && <Check className="size-3.5" />}
+                        {colorTheme === item.id && <Check className="size-3.5 text-primary" />}
                       </DropdownMenuItem>
                     ))}
                   </DropdownMenuGroup>
@@ -164,38 +177,38 @@ export function AppSidebar() {
                   <DropdownMenuSeparator />
 
                   <DropdownMenuGroup>
-                    <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
+                    <DropdownMenuLabel className="text-xs text-muted-foreground font-normal px-2 py-1.5">
                       Mode
                     </DropdownMenuLabel>
                     <DropdownMenuItem
                       onClick={() => setTheme("light")}
-                      className="flex items-center justify-between"
+                      className="flex items-center justify-between cursor-pointer py-1.5"
                     >
                       <div className="flex items-center gap-2">
                         <Sun className="size-4" />
                         <span>Light</span>
                       </div>
-                      {theme === "light" && <Check className="size-3.5" />}
+                      {theme === "light" && <Check className="size-3.5 text-primary" />}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => setTheme("dark")}
-                      className="flex items-center justify-between"
+                      className="flex items-center justify-between cursor-pointer py-1.5"
                     >
                       <div className="flex items-center gap-2">
                         <Moon className="size-4" />
                         <span>Dark</span>
                       </div>
-                      {theme === "dark" && <Check className="size-3.5" />}
+                      {theme === "dark" && <Check className="size-3.5 text-primary" />}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => setTheme("system")}
-                      className="flex items-center justify-between"
+                      className="flex items-center justify-between cursor-pointer py-1.5"
                     >
                       <div className="flex items-center gap-2">
                         <Laptop className="size-4" />
                         <span>System</span>
                       </div>
-                      {theme === "system" && <Check className="size-3.5" />}
+                      {theme === "system" && <Check className="size-3.5 text-primary" />}
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
                 </DropdownMenuContent>
@@ -209,9 +222,10 @@ export function AppSidebar() {
                   if (isMobile) setOpenMobile(false);
                 }}
                 tooltip="Settings"
+                className="transition-all duration-150 rounded-md px-2.5 py-2"
               >
-                <Settings />
-                <span>Settings</span>
+                <Settings className="size-4" />
+                <span className="font-medium text-sm">Settings</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
