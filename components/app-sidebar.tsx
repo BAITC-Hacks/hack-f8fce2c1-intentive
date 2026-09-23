@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Activity,
+  Compass,
   ChartNoAxesColumnIncreasing,
   Check,
   Laptop,
@@ -47,9 +48,9 @@ import { useUserStore } from "@/components/providers/user-store-provider";
 import { isHrEmployee } from "@/lib/employees";
 
 const EMPLOYEE_NAVIGATION = [
-  { href: "/", label: "My development", icon: LayoutDashboard },
-  { href: "/trajectory", label: "Skills & trajectory", icon: ChartNoAxesColumnIncreasing },
-  { href: "/activities", label: "Activities", icon: Activity },
+  { href: "/", label: "Моё развитие", icon: LayoutDashboard },
+  { href: "/trajectory", label: "Карта навыков", icon: ChartNoAxesColumnIncreasing },
+  { href: "/activities", label: "Мои активности", icon: Activity },
 ];
 
 export function AppSidebar() {
@@ -81,7 +82,8 @@ export function AppSidebar() {
             <SidebarMenu className="flex-1 group-data-[collapsible=icon]:hidden">
               <SidebarMenuItem>
                 <SidebarMenuButton size="lg" className="hover:bg-transparent cursor-default">
-                  {/* Здесь может размещаться логотип или название проекта */}
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Compass className="size-5" /></span>
+                  <span className="flex flex-col gap-0.5"><span className="text-sm font-semibold tracking-tight">Intentive</span><span className="text-[10px] tracking-wide text-muted-foreground">CAREER QUEST</span></span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -92,7 +94,7 @@ export function AppSidebar() {
         <SidebarContent className="px-2 py-3 space-y-4">
           <SidebarGroup className="p-0">
             <SidebarGroupLabel className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground/70 px-2 mb-1.5">
-              Workspace
+              Ваше пространство
             </SidebarGroupLabel>
             <SidebarGroupContent>
               {/* Added gap-1.5 between menu items */}

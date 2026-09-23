@@ -97,6 +97,7 @@ export function createRecommendationEngine(dataset: CareerDataset, policies: Rec
         mode: "deterministic" as const,
         goal: development.trajectory.goal,
         recommendations, emptyReason,
+        candidates,
         candidateCount: candidates.length,
         exclusions: development.activities.filter((item) => !item.available || item.impact.targetGapReduction === 0)
           .map((item) => ({ eventId: item.eventId, blockers: item.blockers, noGoalBenefit: item.impact.targetGapReduction === 0 })),

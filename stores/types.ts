@@ -1,6 +1,7 @@
 import type { CareerDataset } from "../core/domain/schemas";
 import type { CareerGoal } from "../core/trajectory/calculate";
 import type { createDevelopmentCalculator } from "../core/development";
+import type { AIClientState, ActivityCommand } from "../core/ai/contracts";
 
 export interface UserPreferences {
   careerGoal: string;
@@ -17,6 +18,9 @@ export interface UserStore {
   preferencesByEmployee: Record<string, UserPreferences>;
   dataRevision: number;
   preferencesRevision: number;
+  activityCommands: ActivityCommand[];
+  ai: AIClientState;
+  requestAIRecommendations: () => Promise<void>;
   selectEmployee: (id: string) => void;
   updatePreferences: (patch: Partial<UserPreferences>) => void;
   startActivity: (employeeId: string, eventId: string) => ActionResult;

@@ -71,23 +71,23 @@ const Header = ({ className }: HeaderProps) => {
     <motion.header
       variants={{
         visible: { y: 0 },
-        hidden: { y: '-100%' },
+        hidden: { y: -100 },
       }}
       animate={isVisible ? 'visible' : 'hidden'}
-      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      transition={{ duration: 0.25, ease: [0.21, 0.47, 0.32, 0.98] }}
       style={{ paddingRight: 'var(--removed-body-scroll-bar-size, 0px)' }}
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 border-b transition-colors duration-300',
+        'fixed top-4 left-1/2 -translate-x-1/2 z-50 h-14 w-[calc(100%-2rem)] max-w-xl rounded-full border transition-colors duration-200',
         isScrolled
-          ? 'h-16 bg-background/80 backdrop-blur-sm md:backdrop-blur-md'
-          : 'h-16 bg-background border-transparent',
+          ? 'bg-background/70 backdrop-blur-md border-border/80 shadow-sm'
+          : 'bg-background/90 backdrop-blur-sm border-border/40',
         className
       )}
     >
-      <div className="mx-auto flex h-full max-w-3xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
-        {/* Логотип текстом */}
-        <Link href="/" className="shrink-0 text-xl font-bold tracking-tight">
-          Intentive
+      <div className="flex h-full items-center justify-between gap-4 px-5">
+        {/* Логотип продукта */}
+        <Link href="/" className="shrink-0 text-base font-semibold tracking-tight">
+          Career Quest
         </Link>
 
         {/* Desktop navigation */}
@@ -98,7 +98,7 @@ const Header = ({ className }: HeaderProps) => {
                 <Link
                   href={item.href}
                   className={cn(
-                    'relative px-3 py-1.5 text-base font-medium rounded-md transition-colors block',
+                    'relative px-3.5 py-1.5 text-sm font-medium rounded-full transition-colors block',
                     isActive(item.href)
                       ? 'text-foreground'
                       : 'text-muted-foreground hover:text-primary'
@@ -128,18 +128,18 @@ const Header = ({ className }: HeaderProps) => {
         {/* Mobile Menu */}
         <div className="md:hidden flex items-center">
           {!mounted ? (
-            <Button variant="outline" size="icon">
-              <MenuIcon className="size-5" />
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+              <MenuIcon className="size-4" />
             </Button>
           ) : (
             <DropdownMenu>
-              <DropdownMenuTrigger render={<Button variant="outline" size="icon" />}>
-                <MenuIcon className="size-5" />
+              <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" />}>
+                <MenuIcon className="size-4" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-48 rounded-2xl mt-2">
                 {NAVIGATION.map((item) => (
-                  <DropdownMenuItem key={item.href} render={<Link href={item.href} />}>
-                    <span className={cn('w-full', isActive(item.href) && 'font-semibold text-primary')}>
+                  <DropdownMenuItem key={item.href} nativeButton={false} render={<Link href={item.href} className="rounded-xl" />}>
+                    <span className={cn('w-full text-sm', isActive(item.href) && 'font-semibold text-primary')}>
                       {item.title}
                     </span>
                   </DropdownMenuItem>

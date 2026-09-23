@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "diagnose:ai": "node --import ./tests/register-typescript.mjs scripts/diagnose-ai.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -11,7 +12,9 @@
     "test:core": "node --import ./tests/register-typescript.mjs --test --test-isolation=none tests/dataset.test.mjs tests/development.test.mjs",
     "test:store": "node --import ./tests/register-typescript.mjs --test --test-isolation=none tests/store.test.mjs",
     "test:recommendations": "node --import ./tests/register-typescript.mjs --test --test-isolation=none tests/recommendations.test.mjs",
-    "test": "node --import ./tests/register-typescript.mjs --test --test-isolation=none tests/dataset.test.mjs tests/development.test.mjs tests/store.test.mjs tests/recommendations.test.mjs"
+    "test:ai": "node --import ./tests/register-typescript.mjs --test --test-isolation=none tests/ai.test.mjs",
+    "test:ai-route": "node tests/smoke-ai-route.mjs",
+    "test": "node --import ./tests/register-typescript.mjs --test --test-isolation=none tests/dataset.test.mjs tests/development.test.mjs tests/store.test.mjs tests/recommendations.test.mjs tests/ai.test.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.66",
