@@ -4,9 +4,11 @@ import { calculateSkillSnapshot, projectEventImpact } from "./skills/calculate";
 import { calculateRequirementProgress, calculateTrajectory, type CareerGoal } from "./trajectory/calculate";
 import { evaluateActivityAvailability } from "./activities/availability";
 import { roleProfileKey } from "./dataset/validate";
+import { developmentPolicy } from "./config";
+import type { GoalPolicy } from "./policies/goal";
 
 /** Build once per validated dataset snapshot. Recreate after import or history changes. */
-export function createDevelopmentCalculator(dataset: CareerDataset) {
+export function createDevelopmentCalculator(dataset: CareerDataset, goalPolicy: GoalPolicy = developmentPolicy.goal) {
   const indexes = createDatasetIndexes(dataset);
   return {
     calculateEmployee(employeeId: string, selectedGoal?: CareerGoal | null) {
@@ -14,7 +16,7 @@ export function createDevelopmentCalculator(dataset: CareerDataset) {
       if (!employee) throw new Error(`Unknown employee: ${employeeId}`);
       const history = indexes.historyByEmployee.get(employeeId) ?? [];
       const skills = calculateSkillSnapshot(employee, dataset.skills, indexes.eventsById, history, dataset.meta.as_of_date);
-      const trajectory = calculateTrajectory(employee, skills.levels, indexes.roleProfilesByKey, selectedGoal);
+      const trajectory = calculateTrajectory(employee, skills.levels, indexes.roleProfilesByKey, selectedGoal, goalPolicy);
       const targetProfile = indexes.roleProfilesByKey.get(roleProfileKey(trajectory.goal.target.target_role, trajectory.goal.target.target_grade))!;
       const activities = dataset.events.map((event) => {
         const availability = evaluateActivityAvailability(employee, skills.levels, event, history, dataset.meta.as_of_date);

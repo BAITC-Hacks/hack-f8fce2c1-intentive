@@ -2,7 +2,7 @@ import { createStore } from "zustand/vanilla";
 import type { CareerDataset } from "../core/domain/schemas";
 import { completeActivity } from "../core/activities/complete";
 import { createDevelopmentCalculator } from "../core/development";
-import { resolveCareerGoal } from "../core/trajectory/calculate";
+import { createGoalPolicy } from "../core/policies/goal";
 import type { UserPreferences, UserStore, ActionResult } from "./types";
 
 /** Synthetic demo session, not authentication or persistent storage. */
@@ -31,7 +31,7 @@ export function createUserStore(input: CareerDataset) {
       const next = { ...state.preferencesByEmployee[employee.employee_id], ...patch };
       if (patch.careerGoal !== undefined && patch.targetGoal === undefined) {
         next.targetGoal = patch.careerGoal === "grow" ? { target_role: employee.role, target_grade: employee.grade }
-          : patch.careerGoal === "promotion" ? resolveCareerGoal({ ...employee, career_goal: null }).target : null;
+          : patch.careerGoal === "promotion" ? createGoalPolicy("next_grade").resolve(employee, null).target : null;
       }
       if (next.targetGoal && !state.dataset.role_profiles.some((profile) => profile.role === next.targetGoal!.target_role && profile.grade === next.targetGoal!.target_grade)) throw new Error("Unknown target role/grade");
       set({ preferencesByEmployee: { ...state.preferencesByEmployee, [employee.employee_id]: next }, preferencesRevision: state.preferencesRevision + 1 });

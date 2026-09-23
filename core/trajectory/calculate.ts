@@ -1,21 +1,12 @@
-import { grades, type Employee, type RoleProfile } from "../domain/schemas";
+import type { Employee, RoleProfile } from "../domain/schemas";
 import { roleProfileKey } from "../dataset/validate";
-
-export type CareerGoal = NonNullable<Employee["career_goal"]>;
-export interface ResolvedGoal {
-  target: CareerGoal;
-  source: "selected" | "profile" | "suggested_next_grade" | "current_role";
-}
+import { developmentPolicy } from "../config";
+import type { CareerGoal, GoalPolicy } from "../policies/goal";
+export type { CareerGoal, ResolvedGoal } from "../policies/goal";
 
 /** undefined retains the profile goal; null explicitly clears it and uses a provisional path. */
-export function resolveCareerGoal(employee: Employee, selectedGoal?: CareerGoal | null): ResolvedGoal {
-  const goal = selectedGoal === undefined ? employee.career_goal : selectedGoal;
-  if (goal) return { target: { ...goal }, source: selectedGoal === undefined ? "profile" : "selected" };
-  const nextGrade = grades[grades.indexOf(employee.grade) + 1];
-  return {
-    target: { target_role: employee.role, target_grade: nextGrade ?? employee.grade },
-    source: nextGrade ? "suggested_next_grade" : "current_role",
-  };
+export function resolveCareerGoal(employee: Employee, selectedGoal?: CareerGoal | null, policy: GoalPolicy = developmentPolicy.goal) {
+  return policy.resolve(employee, selectedGoal);
 }
 
 export interface SkillGap {
@@ -66,8 +57,9 @@ export function calculateTrajectory(
   levels: Readonly<Record<string, number>>,
   profilesByKey: ReadonlyMap<string, RoleProfile>,
   selectedGoal?: CareerGoal | null,
+  goalPolicy: GoalPolicy = developmentPolicy.goal,
 ) {
-  const goal = resolveCareerGoal(employee, selectedGoal);
+  const goal = resolveCareerGoal(employee, selectedGoal, goalPolicy);
   const currentProfile = profilesByKey.get(roleProfileKey(employee.role, employee.grade));
   const targetProfile = profilesByKey.get(roleProfileKey(goal.target.target_role, goal.target.target_grade));
   if (!currentProfile || !targetProfile) throw new Error("No requirements found for current or target role/grade");
