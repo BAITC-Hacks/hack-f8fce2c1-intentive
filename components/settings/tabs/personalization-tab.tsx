@@ -81,24 +81,31 @@ export function PersonalizationTab() {
 
   return (
     <div className="space-y-6">
-      <section className="flex items-center justify-between gap-4 rounded-xl border border-border/40 px-3.5 py-3">
-        <div className="space-y-0.5">
-          <p className="text-xs font-medium text-foreground">{t.chooseLanguage}</p>
-          <p className="text-xs text-muted-foreground">{t.languageDescription}</p>
+      {/* Секция выбора языка — приведа к единому стилю с карточкой контрастности */}
+      <section className="flex items-center justify-between gap-4 rounded-xl border border-border/40 bg-muted/25 px-3.5 py-3">
+        <div className="min-w-0 space-y-0.5">
+          <p className="truncate text-xs font-medium text-foreground">{t.chooseLanguage}</p>
+          <p className="truncate text-xs text-muted-foreground">{t.languageDescription}</p>
         </div>
         <Select value={language} onValueChange={(value) => { if (value === "en" || value === "ru") setLanguage(value); }}>
-          <SelectTrigger aria-label={t.chooseLanguage} className="h-9 w-[140px] shrink-0 px-3"><SelectValue /></SelectTrigger>
-          <SelectContent align="end"><SelectItem value="en">{t.english}</SelectItem><SelectItem value="ru">{t.russian}</SelectItem></SelectContent>
+          <SelectTrigger aria-label={t.chooseLanguage} className="h-9 w-[140px] shrink-0 px-3">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent align="end">
+            <SelectItem value="en">{t.english}</SelectItem>
+            <SelectItem value="ru">{t.russian}</SelectItem>
+          </SelectContent>
         </Select>
       </section>
+
       {/* Верхний блок: Заголовок + Select справа + Карточки цветов */}
       <section className="space-y-4">
         <div className="flex items-start justify-between gap-4">
-          <div>
+          <div className="min-w-0">
             <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">
               {t.colorAccent}
             </h4>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               {t.colorDescription}
             </p>
           </div>
@@ -110,7 +117,7 @@ export function PersonalizationTab() {
               if (value) setTheme(value);
             }}
           >
-            <SelectTrigger className="h-9 w-[130px] px-3 shrink-0">
+            <SelectTrigger className="h-9 w-[130px] shrink-0 px-3">
               <SelectValue />
             </SelectTrigger>
             <SelectContent align="end">
@@ -142,7 +149,7 @@ export function PersonalizationTab() {
                 type="button"
                 onClick={() => setColorTheme(item.id)}
                 className={cn(
-                  "group relative aspect-square flex flex-col justify-between rounded-xl border p-3.5 text-left transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "group relative flex aspect-square flex-col justify-between rounded-xl border p-3.5 text-left transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   isSelected
                     ? "border-primary/50 bg-primary/5 ring-1 ring-primary/30 shadow-xs"
                     : "border-border/50 bg-card hover:border-border hover:bg-accent/30"
@@ -172,12 +179,12 @@ export function PersonalizationTab() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between w-full mt-2">
+                <div className="mt-2 flex w-full items-center justify-between">
                   <span
                     className={cn(
                       "text-xs transition-colors",
                       isSelected
-                        ? "text-foreground font-semibold"
+                        ? "font-semibold text-foreground"
                         : "text-muted-foreground group-hover:text-foreground"
                     )}
                   >
@@ -185,7 +192,7 @@ export function PersonalizationTab() {
                   </span>
 
                   {isSelected && (
-                    <div className="flex size-4 items-center justify-center rounded-full bg-primary text-primary-foreground shrink-0">
+                    <div className="flex size-4 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
                       <Check className="size-2.5 stroke-[3]" />
                     </div>
                   )}
@@ -197,10 +204,10 @@ export function PersonalizationTab() {
       </section>
 
       {/* Нижняя секция: High contrast */}
-      <section className="flex items-center justify-between rounded-xl border border-border/40 bg-muted/25 px-3.5 py-3">
-        <div className="space-y-0.5">
-          <p className="text-xs font-medium text-foreground">{t.highContrast}</p>
-          <p className="text-xs text-muted-foreground">
+      <section className="flex items-center justify-between gap-4 rounded-xl border border-border/40 bg-muted/25 px-3.5 py-3">
+        <div className="min-w-0 space-y-0.5">
+          <p className="truncate text-xs font-medium text-foreground">{t.highContrast}</p>
+          <p className="truncate text-xs text-muted-foreground">
             {t.contrastDescription}
           </p>
         </div>
