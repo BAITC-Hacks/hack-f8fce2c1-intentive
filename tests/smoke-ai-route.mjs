@@ -18,7 +18,7 @@ try {
     await new Promise((resolve) => setTimeout(resolve, 200));
   }
   assert.ok(ready, "Server must start on the dedicated smoke-test port");
-  for (const [path, heading] of [["/", "AI-наставник"], ["/trajectory", "Карта ваших навыков"], ["/activities", "Выберите следующий квест"]]) {
+  for (const [path, heading] of [["/", "AI-наставник"], ["/trajectory", "Главные навыки в фокусе"], ["/activities", "Выберите подходящий квест"]]) {
     const page = await fetch(`${origin}${path}`);
     assert.equal(page.status, 200);
     assert.ok((await page.text()).includes(heading), `Rendered page ${path} must include its main content`);

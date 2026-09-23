@@ -13,8 +13,9 @@
     "test:store": "node --import ./tests/register-typescript.mjs --test --test-isolation=none tests/store.test.mjs",
     "test:recommendations": "node --import ./tests/register-typescript.mjs --test --test-isolation=none tests/recommendations.test.mjs",
     "test:ai": "node --import ./tests/register-typescript.mjs --test --test-isolation=none tests/ai.test.mjs",
+    "test:hr": "node --import ./tests/register-typescript.mjs --test --test-isolation=none tests/hr.test.mjs",
     "test:ai-route": "node tests/smoke-ai-route.mjs",
-    "test": "node --import ./tests/register-typescript.mjs --test --test-isolation=none tests/dataset.test.mjs tests/development.test.mjs tests/store.test.mjs tests/recommendations.test.mjs tests/ai.test.mjs"
+    "test": "node --import ./tests/register-typescript.mjs --test --test-isolation=none tests/dataset.test.mjs tests/development.test.mjs tests/store.test.mjs tests/recommendations.test.mjs tests/ai.test.mjs tests/hr.test.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.66",

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, Award, BookOpen, Check, Compass, Flag, Leaf, LockKeyhole, MoveUpRight, Settings2, Sparkles } from "lucide-react";
+import { ArrowUpRight, Award, BookOpen, Check, Compass, Flag, Leaf, LockKeyhole, MoveUpRight, Settings2, Sparkles, Target } from "lucide-react";
 import { useDevelopment, useUserStore } from "@/components/providers/user-store-provider";
 import { selectProfile } from "@/stores/selectors";
 import { Card, CardContent } from "@/components/ui/card";
@@ -39,10 +39,15 @@ export function DevelopmentWorkspace() {
           <div className="relative flex size-32 shrink-0 items-center justify-center" role="img" aria-label={`Покрытие требований ${percent}%`}><svg viewBox="0 0 120 120" className="absolute inset-0 size-full -rotate-90" aria-hidden="true"><circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" strokeWidth="5" className="text-primary/10" /><circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" pathLength="100" strokeDasharray={`${progress.coveragePercent} 100`} className="text-primary" /></svg><div className="text-center"><p className="text-3xl font-semibold tabular-nums">{percent}<span className="text-lg">%</span></p><p className="mt-1 text-[10px] text-muted-foreground">на пути к цели</p></div></div>
         </CardContent>
       </Card>
-      <div className="grid grid-cols-3 gap-3 lg:grid-cols-1">
+      <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
         {[{ Icon: BookOpen, value: personal.completedCount, label: "квестов завершено", note: "Добровольное обучение" }, { Icon: Leaf, value: grown, label: "навыков выросло", note: "После последней оценки" }, { Icon: Sparkles, value: active.length, label: "активностей в работе", note: "Ваш текущий фокус" }].map(({ Icon, value, label, note }) => <Card key={label} className="rounded-2xl [--card-spacing:--spacing(4)]"><CardContent className="flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-4"><Icon className="size-4 shrink-0 text-primary" /><div className="flex-1"><p className="text-xs font-medium"><span className="mr-1.5 text-lg tabular-nums">{value}</span>{label}</p><p className="mt-0.5 hidden text-[10px] text-muted-foreground sm:block">{note}</p></div></CardContent></Card>)}
       </div>
     </div>
+
+    <nav aria-label="Разделы вашего маршрута" className="grid gap-3 sm:grid-cols-2">
+      <Link href="/trajectory" className="group flex items-center gap-4 rounded-2xl border bg-card p-4 transition-colors hover:border-primary/35 hover:bg-primary/[0.03] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"><span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Target className="size-5" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-semibold">Разобраться в навыках</span><span className="mt-1 block text-xs leading-relaxed text-muted-foreground">Что уже получается и какие разрывы важнее</span></span><ArrowUpRight className="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" /></Link>
+      <Link href="/activities" className="group flex items-center gap-4 rounded-2xl border bg-card p-4 transition-colors hover:border-primary/35 hover:bg-primary/[0.03] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"><span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><BookOpen className="size-5" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-semibold">{active.length ? "Продолжить обучение" : "Выбрать активность"}</span><span className="mt-1 block text-xs leading-relaxed text-muted-foreground">{active.length ? `${active.length} сейчас в работе` : "Доступные шаги в вашем темпе"}</span></span><ArrowUpRight className="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" /></Link>
+    </nav>
 
     <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
       <AICoach />

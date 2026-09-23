@@ -17,8 +17,15 @@ export const aiRequestSchema = z.object({
   commands: z.array(activityCommandSchema).max(100),
 }).strict();
 export type AIRequest = z.infer<typeof aiRequestSchema>;
+const feedbackText = z.string().trim().min(20).max(1400);
 export const modelDecisionSchema = z.object({
-  choices: z.array(z.object({ eventId: id, reasonIds: z.array(z.number().int().min(0).max(10)).min(3).max(6) }).strict()).min(1).max(3),
+  summary: feedbackText,
+  choices: z.array(z.object({
+    eventId: id,
+    reasonIds: z.array(z.number().int().min(0).max(10)).min(3).max(6),
+    explanation: feedbackText,
+    firstStep: feedbackText,
+  }).strict()).min(1).max(3),
 }).strict();
 export type ModelDecision = z.infer<typeof modelDecisionSchema>;
 export type FallbackReason = "not_configured" | "disabled" | "timeout" | "provider_error" | "invalid_output" | "no_candidates"
@@ -28,6 +35,7 @@ export interface AIResponse {
   fallbackReason: FallbackReason | null;
   model: string | null;
   aiPolicyVersion: string;
+  feedback: ModelDecision | null;
   result: RecommendationResult;
 }
 export interface AIClientState {

@@ -123,7 +123,7 @@ export function AppSidebar() {
           {isHr && (
             <SidebarGroup className="p-0">
               <SidebarGroupLabel className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground/70 px-2 mb-1.5">
-                HR workspace
+                Для HR
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu className="gap-1.5">
@@ -131,11 +131,11 @@ export function AppSidebar() {
                     <SidebarMenuButton
                       render={<Link href="/hr" onClick={() => isMobile && setOpenMobile(false)} />}
                       isActive={pathname === "/hr"}
-                      tooltip="HR overview"
+                      tooltip="Обзор команды"
                       className="transition-all duration-150 rounded-md px-2.5 py-2"
                     >
                       <UsersRound className="size-4 shrink-0 transition-transform duration-150 group-hover/menu-button:scale-105" />
-                      <span className="font-medium text-sm">HR overview</span>
+                      <span className="font-medium text-sm">Обзор команды</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>

@@ -15,13 +15,16 @@ const request = { employeeId: base.employees[0].employee_id, targetGoal: base.em
 const prepared = prepareRecommendations(base, request);
 const input = { ...prepared, interests: request.interests };
 const config = readAIConfig({});
-const choices = (items) => ({ choices: items.map((item) => ({ eventId: item.eventId, reasonIds: [2, 0, 1] })) });
+const coaching = { explanation: "AI explains the personal skill gap and the priority of this activity.", firstStep: "AI suggests a small practical exercise to begin developing the skill." };
+const summary = "AI synthesizes the current role, target and a recommended learning sequence.";
+const choices = (items) => ({ summary, choices: items.map((item) => ({ eventId: item.eventId, reasonIds: [2, 0, 1], ...coaching })) });
 const success = async () => runRecommendationAgent(input, config, async () => choices(prepared.result.recommendations));
 
-test("LangGraph accepts eligible choices and renders only verified facts without identifiers", async () => {
+test("LangGraph preserves AI coaching alongside computed facts and omits employee identifiers from context", async () => {
   let sent;
   const result = await runRecommendationAgent(input, config, async (context) => { sent = context; return choices(prepared.result.recommendations); });
   assert.equal(result.source, "ai");
+  assert.deepEqual(result.feedback, choices(prepared.result.recommendations));
   assert.equal(result.result.recommendations[0].reasons[0], prepared.result.recommendations[0].reasons[2]);
   assert.ok(!sent.includes(base.employees[0].full_name));
   assert.ok(!sent.includes(base.employees[0].employee_id));
@@ -36,15 +39,30 @@ test("no key and no candidates fall back without calling the provider", async ()
   assert.equal(called, false);
 });
 
-test("invalid IDs, duplicate choices, omitted factors and fabricated text trigger fallback", async () => {
+test("invalid IDs, duplicate choices, omitted factors and unexpected fields trigger fallback", async () => {
   const first = prepared.result.recommendations[0].eventId;
   for (const output of [
     { choices: [{ eventId: "INVENTED", reasonIds: [0, 1, 2] }] },
     { choices: [{ eventId: first, reasonIds: [0, 1, 1] }] },
     { choices: [{ eventId: first, reasonIds: [0, 1, 9] }] },
-    { choices: [{ eventId: first, reasonIds: [0, 1, 2], explanation: "Guaranteed promotion" }] },
+    { choices: [{ eventId: first, reasonIds: [0, 1, 2], inventedField: "unexpected" }] },
     { choices: [{ eventId: first, reasonIds: [0, 1, 2] }, { eventId: first, reasonIds: [0, 1, 2] }] },
-  ]) assert.equal((await runRecommendationAgent(input, config, async () => output)).fallbackReason, "invalid_output");
+  ]) assert.equal((await runRecommendationAgent(input, config, async () => ({ summary,
+    choices: output.choices.map((choice) => ({ ...coaching, ...choice })),
+  }))).fallbackReason, "invalid_output");
+});
+
+test("missing, blank or oversized coaching cannot be presented as a successful AI response", async () => {
+  const valid = choices(prepared.result.recommendations);
+  for (const output of [
+    { choices: valid.choices }, { ...valid, summary: " ".repeat(30) }, { ...valid, summary: "x".repeat(1401) },
+    { ...valid, choices: valid.choices.map(({ firstStep, ...choice }) => choice) },
+    { ...valid, choices: valid.choices.map((choice) => ({ ...choice, explanation: "" })) },
+  ]) {
+    const result = await runRecommendationAgent(input, config, async () => output);
+    assert.equal(result.fallbackReason, "invalid_output");
+    assert.equal(result.feedback, null);
+  }
 });
 
 test("explain mode preserves calculated activities and their order", async () => {
@@ -122,7 +140,8 @@ test("server replay matches local demo history and rejects cross-employee comman
 test("request contract rejects supplied scores and oversized input", () => {
   assert.equal(aiRequestSchema.safeParse({ ...request, scores: [1] }).success, false);
   assert.equal(aiRequestSchema.safeParse({ ...request, interests: "x".repeat(2001) }).success, false);
-  assert.throws(() => readAIConfig({ AI_TIMEOUT_MS: "20000" }));
+  assert.equal(readAIConfig({ AI_TIMEOUT_MS: "25000" }).timeoutMs, 25000);
+  assert.throws(() => readAIConfig({ AI_TIMEOUT_MS: "31000" }));
 });
 
 test("client accepts success but ignores late responses after profile or preference changes", async () => {
@@ -131,6 +150,7 @@ test("client accepts success but ignores late responses after profile or prefere
   await store.getState().requestAIRecommendations();
   assert.equal(store.getState().ai.status, "ready");
   assert.equal(store.getState().ai.response.source, "ai");
+  assert.deepEqual(store.getState().ai.response.feedback, result.feedback);
   for (const change of [state => state.selectEmployee(base.employees[1].employee_id), state => state.updatePreferences({ interests: "Changed" })]) {
     let resolve;
     const pending = createUserStore(base, () => new Promise((done) => { resolve = done; }));
@@ -140,6 +160,16 @@ test("client accepts success but ignores late responses after profile or prefere
     await promise;
     assert.equal(pending.getState().ai.status, "idle");
     assert.equal(pending.getState().ai.response, null);
+  }
+});
+
+test("client rejects legacy success without coaching and explanations attached to other activities", async () => {
+  const result = await success();
+  for (const feedback of [undefined, { ...result.feedback, choices: result.feedback.choices.map((choice) => ({ ...choice, eventId: "OTHER" })) }]) {
+    const store = createUserStore(base, async () => Response.json({ ...result, feedback }));
+    await store.getState().requestAIRecommendations();
+    assert.equal(store.getState().ai.status, "error");
+    assert.equal(store.getState().ai.response, null);
   }
 });
 

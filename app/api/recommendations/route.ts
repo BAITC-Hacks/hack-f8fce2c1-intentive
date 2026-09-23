@@ -6,7 +6,7 @@ import { createOpenAIProvider } from "@/server/ai/provider";
 import { runRecommendationAgent } from "@/server/ai/graph";
 
 export const runtime = "nodejs";
-export const maxDuration = 15;
+export const maxDuration = 40;
 // Small local-demo budget. Production needs identity-based distributed limits and authentication.
 let requests: number[] = [];
 let inFlight = 0;

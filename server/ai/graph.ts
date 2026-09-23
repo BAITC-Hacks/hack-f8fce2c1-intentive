@@ -15,7 +15,7 @@ export interface AgentInput {
 
 /** Provider injection keeps all graph paths testable without credentials or network calls. */
 export async function runRecommendationAgent(input: AgentInput, config: AIConfig, provider: ModelProvider | null, externalSignal?: AbortSignal): Promise<AIResponse> {
-  const fallback = (reason: FallbackReason): AIResponse => ({ source: "fallback", fallbackReason: reason, model: null, aiPolicyVersion: AI_POLICY_VERSION, result: input.result });
+  const fallback = (reason: FallbackReason): AIResponse => ({ source: "fallback", fallbackReason: reason, model: null, aiPolicyVersion: AI_POLICY_VERSION, feedback: null, result: input.result });
   if (!input.result.candidates.length) return fallback("no_candidates");
   if (!provider) return fallback("not_configured");
   const pool = config.role === "explain" ? input.result.recommendations : input.result.candidates.slice(0, config.candidateLimit);
@@ -29,8 +29,12 @@ export async function runRecommendationAgent(input: AgentInput, config: AIConfig
       mode: config.role, limit: input.result.recommendations.length,
       requiredEventIds: config.role === "explain" ? pool.map((item) => item.eventId) : null,
       interests: input.interests,
+      goalSource: input.result.goal.source,
       candidates: pool.map((candidate) => ({ eventId: candidate.eventId,
         title: input.dataset.events.find((event) => event.event_id === candidate.eventId)!.title,
+        description: input.dataset.events.find((event) => event.event_id === candidate.eventId)!.description,
+        durationHours: candidate.evidence.durationHours,
+        nextSessionDate: candidate.evidence.nextSessionDate,
         factors: candidate.factors, facts: candidate.reasons.map((text, reasonId) => ({ reasonId, text })) })),
     }) }))
     .addNode("choose", async (current) => ({ output: await provider(current.context, signal) }))
@@ -49,6 +53,7 @@ export async function runRecommendationAgent(input: AgentInput, config: AIConfig
         selected.push({ ...candidate, reasons: choice.reasonIds.map((id) => candidate.reasons[id]) });
       }
       return { response: { source: "ai", fallbackReason: null, model: config.model, aiPolicyVersion: AI_POLICY_VERSION,
+        feedback: parsed.data,
         result: { ...input.result, recommendations: selected } } satisfies AIResponse };
     })
     .addEdge(START, "prepare").addEdge("prepare", "choose").addEdge("choose", "validate").addEdge("validate", END).compile();

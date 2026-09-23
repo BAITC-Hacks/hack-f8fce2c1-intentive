@@ -1,6 +1,6 @@
 import type { StoreApi } from "zustand/vanilla";
 import type { UserStore } from "./types";
-import { aiRequestSchema, type AIClientState, type AIResponse } from "../core/ai/contracts";
+import { aiRequestSchema, modelDecisionSchema, type AIClientState, type AIResponse } from "../core/ai/contracts";
 
 export const idleAI = (): AIClientState => ({ status: "idle", response: null, error: null });
 
@@ -17,7 +17,7 @@ export function createAIActions(set: StoreApi<UserStore>["setState"], get: Store
     const current = () => controller === token && get().dataset === before.dataset && get().selectedEmployeeId === employeeId
       && get().preferencesByEmployee[employeeId] === preferences;
     set({ ai: { status: "loading", response: null, error: null } });
-    const timer = setTimeout(() => token.abort(), 12000);
+    const timer = setTimeout(() => token.abort(), 35000);
     try {
       const body = aiRequestSchema.parse({ employeeId, targetGoal: preferences.targetGoal, interests: preferences.interests,
         learningFormat: preferences.learningFormat, weeklyHours: preferences.weeklyHours,
@@ -30,6 +30,14 @@ export function createAIActions(set: StoreApi<UserStore>["setState"], get: Store
         : "Не удалось связаться с AI. Базовые рекомендации доступны ниже.");
       const result = await response.json() as AIResponse;
       if (result.result?.employeeId !== employeeId || !["ai", "fallback"].includes(result.source)) throw new Error("Invalid AI response");
+      if (result.source === "ai") {
+        const feedback = modelDecisionSchema.safeParse(result.feedback);
+        if (!feedback.success || JSON.stringify(feedback.data.choices.map((choice) => choice.eventId))
+          !== JSON.stringify(result.result.recommendations.map((item) => item.eventId))) {
+          throw new Error("AI не вернул полный разбор. Повторите запрос; если ошибка сохраняется, перезапустите dev-сервер.");
+        }
+        result.feedback = feedback.data;
+      }
       if (current()) set({ ai: { status: "ready", response: result, error: null } });
     } catch (error) {
       if (current()) set({ ai: { status: "error", response: null, error: token.signal.aborted
