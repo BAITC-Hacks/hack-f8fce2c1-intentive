@@ -1,4 +1,5 @@
 import { createStore } from "zustand/vanilla";
+import { persist, createJSONStorage } from "zustand/middleware";
 import type { CareerDataset } from "../core/domain/schemas";
 import { completeActivity } from "../core/activities/complete";
 import { startActivity } from "../core/activities/start";
@@ -6,7 +7,7 @@ import { createGoalPolicy } from "../core/policies/goal";
 import type { UserPreferences, UserStore, ActionResult } from "./types";
 import { createAIActions, idleAI } from "./ai-actions";
 
-/** Synthetic demo session, not authentication or persistent storage. */
+/** Synthetic demo session; only the interface language is persisted locally. */
 export function createUserStore(input: CareerDataset, transport: typeof fetch = fetch) {
   const dataset = structuredClone(input);
   if (!dataset.employees.length) throw new Error("At least one employee is required");
@@ -20,10 +21,13 @@ export function createUserStore(input: CareerDataset, transport: typeof fetch = 
     return [employee.employee_id, preferences];
   }));
   const error = (message: string): ActionResult => ({ ok: false, error: message });
-  return createStore<UserStore>()((set, get) => {
+  return createStore<UserStore>()(persist((set, get) => {
     const aiActions = createAIActions(set, get, transport);
     return {
-    dataset, selectedEmployeeId: dataset.employees[0].employee_id, preferencesByEmployee,
+      language: "en", setLanguage: (language) => {
+        if (get().language !== language) set({ language, ai: aiActions.invalidate() });
+      },
+      dataset, selectedEmployeeId: dataset.employees[0].employee_id, preferencesByEmployee,
     dataRevision: 0, preferencesRevision: 0,
     activityCommands: [], ai: idleAI(), requestAIRecommendations: aiActions.requestAIRecommendations,
     selectEmployee: (id) => {
@@ -67,5 +71,13 @@ export function createUserStore(input: CareerDataset, transport: typeof fetch = 
         return { ok: true, recordId };
       } catch (cause) { return error(cause instanceof Error ? cause.message : "Unable to complete activity"); }
     },
-  }; });
+  }; }, {
+    name: "intentive-user-settings",
+    storage: createJSONStorage(() => typeof window === "undefined"
+      ? { getItem: () => null, setItem: () => {}, removeItem: () => {} }
+      : window.localStorage),
+    skipHydration: true,
+    partialize: (state) => ({ language: state.language }) as UserStore,
+    version: 1,
+  }));
 }

@@ -9,6 +9,7 @@ import {
   Compass,
   ChartNoAxesColumnIncreasing,
   Check,
+  Info,
   Laptop,
   LayoutDashboard,
   Moon,
@@ -46,6 +47,7 @@ import { SettingsDialog } from "@/components/settings";
 import { useColorTheme } from "@/components/themes/theme-provider";
 import { useUserStore } from "@/components/providers/user-store-provider";
 import { isHrEmployee } from "@/lib/employees";
+import { useSettingsI18n } from "@/components/settings/i18n";
 
 const EMPLOYEE_NAVIGATION = [
   { href: "/", label: "Моё развитие", icon: LayoutDashboard },
@@ -53,15 +55,25 @@ const EMPLOYEE_NAVIGATION = [
   { href: "/activities", label: "Мои активности", icon: Activity },
 ];
 
+// Локализация для кнопки "О нас"
+const ABOUT_TRANSLATIONS = {
+  ru: "О нас",
+  en: "About us",
+};
+
 export function AppSidebar() {
   const [settingsOpen, setSettingsOpen] = React.useState(false);
   const pathname = usePathname();
   const profile = useUserStore(selectProfile);
+  const { t, language } = useSettingsI18n(); // Определение текущего языка из вашего I18n
   const isHr = isHrEmployee(profile);
   const { isMobile, setOpenMobile } = useSidebar();
   const { theme, setTheme } = useTheme();
   const { colorTheme, setColorTheme, colorThemes } = useColorTheme();
   const [mounted, setMounted] = React.useState(false);
+
+  // Получаем перевод для текущего языка (по умолчанию RU)
+  const aboutLabel = ABOUT_TRANSLATIONS[(language as "ru" | "en") || "ru"] || ABOUT_TRANSLATIONS.ru;
 
   React.useEffect(() => {
     setMounted(true);
@@ -97,7 +109,6 @@ export function AppSidebar() {
               Ваше пространство
             </SidebarGroupLabel>
             <SidebarGroupContent>
-              {/* Added gap-1.5 between menu items */}
               <SidebarMenu className="gap-1.5">
                 {EMPLOYEE_NAVIGATION.map((item) => {
                   const Icon = item.icon;
@@ -111,7 +122,7 @@ export function AppSidebar() {
                         className="transition-all duration-150 rounded-md px-2.5 py-2"
                       >
                         <Icon className="size-4 shrink-0 transition-transform duration-150 group-hover/menu-button:scale-105" />
-                        <span className="font-medium text-sm">{item.label}</span>
+                        <span className="font-medium text-sm">{item.href === "/" ? t.navDevelopment : item.href === "/trajectory" ? t.navSkills : t.navActivities}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   );
@@ -135,7 +146,7 @@ export function AppSidebar() {
                       className="transition-all duration-150 rounded-md px-2.5 py-2"
                     >
                       <UsersRound className="size-4 shrink-0 transition-transform duration-150 group-hover/menu-button:scale-105" />
-                      <span className="font-medium text-sm">Обзор команды</span>
+                      <span className="font-medium text-sm">{t.navHr}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
@@ -147,7 +158,6 @@ export function AppSidebar() {
         <SidebarSeparator className="mx-2 opacity-50" />
 
         <SidebarFooter className="p-2">
-          {/* Added gap-1.5 for control items in footer */}
           <SidebarMenu className="gap-1.5">
             <SidebarMenuItem>
               <DropdownMenu>
@@ -155,14 +165,14 @@ export function AppSidebar() {
                   render={
                     <SidebarMenuButton tooltip="Toggle Theme" className="transition-all duration-150 rounded-md px-2.5 py-2">
                       {getThemeIcon()}
-                      <span className="font-medium text-sm">Theme</span>
+                      <span className="font-medium text-sm">{t.theme}</span>
                     </SidebarMenuButton>
                   }
                 />
                 <DropdownMenuContent side="right" align="end" className="w-48 shadow-md">
                   <DropdownMenuGroup>
                     <DropdownMenuLabel className="text-xs text-muted-foreground font-normal px-2 py-1.5">
-                      Color Theme
+                      {t.colorTheme}
                     </DropdownMenuLabel>
                     {colorThemes.map((item) => (
                       <DropdownMenuItem
@@ -180,7 +190,7 @@ export function AppSidebar() {
 
                   <DropdownMenuGroup>
                     <DropdownMenuLabel className="text-xs text-muted-foreground font-normal px-2 py-1.5">
-                      Mode
+                      {t.mode}
                     </DropdownMenuLabel>
                     <DropdownMenuItem
                       onClick={() => setTheme("light")}
@@ -188,7 +198,7 @@ export function AppSidebar() {
                     >
                       <div className="flex items-center gap-2">
                         <Sun className="size-4" />
-                        <span>Light</span>
+                        <span>{t.light}</span>
                       </div>
                       {theme === "light" && <Check className="size-3.5 text-primary" />}
                     </DropdownMenuItem>
@@ -198,7 +208,7 @@ export function AppSidebar() {
                     >
                       <div className="flex items-center gap-2">
                         <Moon className="size-4" />
-                        <span>Dark</span>
+                        <span>{t.dark}</span>
                       </div>
                       {theme === "dark" && <Check className="size-3.5 text-primary" />}
                     </DropdownMenuItem>
@@ -208,7 +218,7 @@ export function AppSidebar() {
                     >
                       <div className="flex items-center gap-2">
                         <Laptop className="size-4" />
-                        <span>System</span>
+                        <span>{t.system}</span>
                       </div>
                       {theme === "system" && <Check className="size-3.5 text-primary" />}
                     </DropdownMenuItem>
@@ -223,11 +233,24 @@ export function AppSidebar() {
                   setSettingsOpen(true);
                   if (isMobile) setOpenMobile(false);
                 }}
-                tooltip="Settings"
+                tooltip={t.settings}
                 className="transition-all duration-150 rounded-md px-2.5 py-2"
               >
                 <Settings className="size-4" />
-                <span className="font-medium text-sm">Settings</span>
+                <span className="font-medium text-sm">{t.settings}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            {/* Кнопка "О нас" */}
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                render={<Link href="/about" onClick={() => isMobile && setOpenMobile(false)} />}
+                isActive={pathname === "/about"}
+                tooltip={aboutLabel}
+                className="transition-all duration-150 rounded-md px-2.5 py-2"
+              >
+                <Info className="size-4 shrink-0 transition-transform duration-150 group-hover/menu-button:scale-105" />
+                <span className="font-medium text-sm">{aboutLabel}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

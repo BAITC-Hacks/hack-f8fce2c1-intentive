@@ -13,6 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { useUserStore } from "@/components/providers/user-store-provider";
+import { useSettingsI18n } from "../i18n";
 
 const MODE_OPTIONS = [
   {
@@ -57,6 +59,8 @@ const THEME_PREVIEWS: Record<
 };
 
 export function PersonalizationTab() {
+  const { t, language } = useSettingsI18n();
+  const setLanguage = useUserStore((state) => state.setLanguage);
   const { theme, setTheme } = useTheme();
   const {
     colorTheme,
@@ -77,15 +81,25 @@ export function PersonalizationTab() {
 
   return (
     <div className="space-y-6">
+      <section className="flex items-center justify-between gap-4 rounded-xl border border-border/40 px-3.5 py-3">
+        <div className="space-y-0.5">
+          <p className="text-xs font-medium text-foreground">{t.chooseLanguage}</p>
+          <p className="text-xs text-muted-foreground">{t.languageDescription}</p>
+        </div>
+        <Select value={language} onValueChange={(value) => { if (value === "en" || value === "ru") setLanguage(value); }}>
+          <SelectTrigger aria-label={t.chooseLanguage} className="h-9 w-[140px] shrink-0 px-3"><SelectValue /></SelectTrigger>
+          <SelectContent align="end"><SelectItem value="en">{t.english}</SelectItem><SelectItem value="ru">{t.russian}</SelectItem></SelectContent>
+        </Select>
+      </section>
       {/* Верхний блок: Заголовок + Select справа + Карточки цветов */}
       <section className="space-y-4">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">
-              Color Accent
+              {t.colorAccent}
             </h4>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Choose an accent palette and mode for your workspace.
+              {t.colorDescription}
             </p>
           </div>
 
@@ -107,7 +121,7 @@ export function PersonalizationTab() {
                   <SelectItem key={item.value} value={item.value}>
                     <div className="flex items-center gap-2">
                       <Icon className="size-3.5 text-muted-foreground" />
-                      <span>{item.label}</span>
+                      <span>{item.value === "light" ? t.light : item.value === "dark" ? t.dark : t.system}</span>
                     </div>
                   </SelectItem>
                 );
@@ -185,15 +199,15 @@ export function PersonalizationTab() {
       {/* Нижняя секция: High contrast */}
       <section className="flex items-center justify-between rounded-xl border border-border/40 bg-muted/25 px-3.5 py-3">
         <div className="space-y-0.5">
-          <p className="text-xs font-medium text-foreground">High contrast</p>
+          <p className="text-xs font-medium text-foreground">{t.highContrast}</p>
           <p className="text-xs text-muted-foreground">
-            Increase contrast for text and borders.
+            {t.contrastDescription}
           </p>
         </div>
         <Switch
           checked={highContrast}
           onCheckedChange={setHighContrast}
-          aria-label="Toggle high contrast"
+          aria-label={t.toggleContrast}
         />
       </section>
     </div>

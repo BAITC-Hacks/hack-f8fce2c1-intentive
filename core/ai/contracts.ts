@@ -10,6 +10,7 @@ export const activityCommandSchema = z.discriminatedUnion("kind", [
 export type ActivityCommand = z.infer<typeof activityCommandSchema>;
 export const aiRequestSchema = z.object({
   employeeId: id,
+  language: z.enum(["ru", "en"]).default("ru"),
   targetGoal: z.object({ target_role: z.string().min(1).max(100), target_grade: gradeSchema }).nullable(),
   interests: z.string().max(2000),
   learningFormat: z.enum(["any", "self_paced", "workshop", "mentoring"]),

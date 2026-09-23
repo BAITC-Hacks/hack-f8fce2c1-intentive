@@ -10,9 +10,12 @@ export interface UserPreferences {
   learningFormat: string;
   weeklyHours: string;
 }
+export type Language = "en" | "ru";
 export type Development = ReturnType<ReturnType<typeof createDevelopmentCalculator>["calculateEmployee"]>;
 export type ActionResult = { ok: true; recordId: string } | { ok: false; error: string };
 export interface UserStore {
+  language: Language;
+  setLanguage: (language: Language) => void;
   dataset: CareerDataset;
   selectedEmployeeId: string;
   preferencesByEmployee: Record<string, UserPreferences>;

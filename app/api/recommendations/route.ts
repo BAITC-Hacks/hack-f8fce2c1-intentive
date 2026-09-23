@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     const config = readAIConfig();
     const apiKey = process.env.OPENAI_API_KEY?.trim();
     const provider = apiKey ? createOpenAIProvider(apiKey, config) : null;
-    return json(await runRecommendationAgent({ ...prepared, interests: parsed.data.interests }, config, provider, request.signal));
+    return json(await runRecommendationAgent({ ...prepared, interests: parsed.data.interests, language: parsed.data.language }, config, provider, request.signal));
   } catch { return json({ error: "Unable to process recommendation request" }, 500); }
   finally { inFlight--; }
 }

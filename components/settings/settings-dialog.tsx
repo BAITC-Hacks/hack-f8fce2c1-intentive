@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { SETTINGS_TABS, DEFAULT_SETTINGS_TAB } from "./settings-config";
+import { useSettingsI18n } from "./i18n";
 
 interface SettingsDialogProps {
   open?: boolean;
@@ -35,6 +36,10 @@ export function SettingsDialog({
 }: SettingsDialogProps) {
   const [activeTabId, setActiveTabId] = React.useState(defaultTab);
   const isMobile = useIsMobile();
+  const { t } = useSettingsI18n();
+  const tabText = (id: string) => id === "account" ? [t.account, t.accountDescription]
+    : id === "preferences" ? [t.preferences, t.preferencesDescription]
+      : [t.personalization, t.personalizationDescription];
   const activeTab =
     SETTINGS_TABS.find((tab) => tab.id === activeTabId) || SETTINGS_TABS[0];
   const ActiveComponent = activeTab.component;
@@ -45,7 +50,7 @@ export function SettingsDialog({
         <div className="flex flex-col gap-4">
           <div className="hidden px-3 pt-2 pb-1 md:block">
             <h2 className="text-sm font-semibold tracking-tight text-foreground/90">
-              Settings
+              {t.settings}
             </h2>
           </div>
           <nav className="no-scrollbar flex gap-1 overflow-x-auto md:flex-col md:overflow-y-auto">
@@ -76,7 +81,7 @@ export function SettingsDialog({
                         : "text-muted-foreground group-hover:text-foreground"
                     )}
                   />
-                  <span className="truncate">{tab.label}</span>
+                  <span className="truncate">{tabText(tab.id)[0]}</span>
                   {tab.badge && (
                     <span
                       className={cn(
@@ -103,11 +108,11 @@ export function SettingsDialog({
         >
           <div className="mb-6 border-b border-border/40 pb-4">
             <h3 className="text-lg font-semibold tracking-tight text-foreground">
-              {activeTab.label}
+              {tabText(activeTab.id)[0]}
             </h3>
             {activeTab.description && (
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                {activeTab.description}
+                {tabText(activeTab.id)[1]}
               </p>
             )}
           </div>
@@ -124,7 +129,7 @@ export function SettingsDialog({
       <Drawer open={open} onOpenChange={onOpenChange} showSwipeHandle>
         {trigger && <DrawerTrigger render={trigger as React.ReactElement} />}
         <DrawerContent className="h-[min(85dvh,44rem)]">
-          <DrawerTitle className="sr-only">Settings</DrawerTitle>
+          <DrawerTitle className="sr-only">{t.settings}</DrawerTitle>
           <DrawerClose
             render={
               <Button
@@ -135,7 +140,7 @@ export function SettingsDialog({
             }
           >
             <X />
-            <span className="sr-only">Close settings</span>
+            <span className="sr-only">{t.close}</span>
           </DrawerClose>
           <div className="flex min-h-0 flex-1 flex-col">{settingsContent}</div>
         </DrawerContent>
@@ -147,7 +152,7 @@ export function SettingsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       {trigger && <DialogTrigger render={trigger as React.ReactElement} />}
       <DialogContent className="h-[85vh] max-h-[680px] gap-0 overflow-hidden rounded-2xl border-border/50 p-0 shadow-2xl md:flex md:max-w-4xl md:flex-row">
-        <DialogTitle className="sr-only">Settings</DialogTitle>
+        <DialogTitle className="sr-only">{t.settings}</DialogTitle>
         {settingsContent}
       </DialogContent>
     </Dialog>

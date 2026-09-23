@@ -94,6 +94,30 @@ test("OpenAI transport uses Responses, strict schema, server bearer key and stor
   assert.equal(sent.text.format.strict, true);
   assert.equal(sent.model, config.model);
   assert.ok(!JSON.stringify(result).includes("test-only-key"));
+  assert.match(sent.instructions, /Preserve supplied course, role, and skill names exactly as written/);
+});
+
+test("AI requests use the selected language and discard responses after a language change", async () => {
+  const result = await success();
+  let resolve;
+  let sent;
+  const store = createUserStore(base, (_url, options) => {
+    sent = JSON.parse(options.body);
+    return new Promise((done) => { resolve = done; });
+  });
+  const pending = store.getState().requestAIRecommendations();
+  assert.equal(sent.language, "en");
+  store.getState().setLanguage("ru");
+  resolve(Response.json(result));
+  await pending;
+  assert.equal(store.getState().ai.status, "idle");
+  assert.equal(store.getState().ai.response, null);
+  let providerLanguage;
+  await runRecommendationAgent({ ...input, language: "en" }, config, async (_context, _signal, language) => {
+    providerLanguage = language;
+    return choices(prepared.result.recommendations);
+  });
+  assert.equal(providerLanguage, "en");
 });
 
 test("OpenAI incomplete, refusal and HTTP errors cannot become accepted output", async () => {

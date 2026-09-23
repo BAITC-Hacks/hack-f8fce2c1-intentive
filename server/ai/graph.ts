@@ -3,6 +3,7 @@ import { z } from "zod";
 import { modelDecisionSchema, type AIResponse, type FallbackReason } from "../../core/ai/contracts";
 import type { CareerDataset } from "../../core/domain/schemas";
 import type { RecommendationResult } from "../../core/recommendations/recommend";
+import type { Language } from "../../stores/types";
 import { AI_POLICY_VERSION, type AIConfig } from "./config";
 import type { ModelProvider } from "./provider";
 import { AIProviderError } from "./errors";
@@ -11,6 +12,7 @@ export interface AgentInput {
   dataset: CareerDataset;
   result: RecommendationResult;
   interests: string;
+  language?: Language;
 }
 
 /** Provider injection keeps all graph paths testable without credentials or network calls. */
@@ -37,7 +39,7 @@ export async function runRecommendationAgent(input: AgentInput, config: AIConfig
         nextSessionDate: candidate.evidence.nextSessionDate,
         factors: candidate.factors, facts: candidate.reasons.map((text, reasonId) => ({ reasonId, text })) })),
     }) }))
-    .addNode("choose", async (current) => ({ output: await provider(current.context, signal) }))
+    .addNode("choose", async (current) => ({ output: await provider(current.context, signal, input.language ?? "ru") }))
     .addNode("validate", (current) => {
       const parsed = modelDecisionSchema.safeParse(current.output);
       if (!parsed.success) return { response: fallback("invalid_output") };
